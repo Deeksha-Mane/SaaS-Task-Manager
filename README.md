@@ -1,4 +1,4 @@
-# 📝 Task Manager
+# 📝 SaaS Task Manager
 
 A full-stack task management application built with the MERN stack (MongoDB, Express, React, Node.js).
 
@@ -31,9 +31,6 @@ A full-stack task management application built with the MERN stack (MongoDB, Exp
 - **Recurring Tasks** - Daily, weekly, or monthly auto-creation
 - **Export** - Download tasks as CSV or PDF
 - **Profile Management** - Update name, email, and password
-- **Animated Counters** - Smooth number animations
-- **Loading Skeletons** - Professional loading states
-- **Toast Notifications** - Instant feedback for actions
 - **Keyboard Shortcuts** - Quick actions (N for new task, / for search, Esc to close)
 
 ---
@@ -65,7 +62,7 @@ A full-stack task management application built with the MERN stack (MongoDB, Exp
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/task-manager.git
+git clone https://github.com/Deeksha-Mane/SaaS-Task-Manager.git
 cd task-manager
 ```
 
@@ -114,7 +111,6 @@ npm run dev
 The app will be available at:
 - Frontend: http://localhost:5173
 - Backend: http://localhost:5000
-
 
 ---
 
@@ -169,24 +165,10 @@ Future enhancements:
 
 ---
 
-## 👨‍💻 Author
+> 💡 _"You have the right to perform your prescribed duties, but you are not entitled to the fruits of your actions.  
+> &emsp;— **Bhagavad Gita**
+> ---
+Every competition taught me something new — teamwork, speed, pressure handling, and most importantly, consistency.
 
-**Deeksha Mane**
+🎯 *Let the work be your worship, and excellence be your habit.*
 
----
-
-## 🙏 Acknowledgments
-
-- MongoDB - Database
-- Express - Backend framework
-- React - Frontend library
-- Node.js - Runtime environment
-- Vite - Build tool
-
----
-
-<div align="center">
-
-Made with ❤️
-
-</div>
