@@ -27,8 +27,6 @@ A modern, full-stack task management application built with the MERN stack (Mong
 - **Task Templates** - Save and reuse task templates
 - **Recurring Tasks** - Daily, weekly, or monthly auto-creation
 - **Export** - Download tasks as CSV or PDF
-- **Profile Management** - Update name, email, and password
-- **Keyboard Shortcuts** - Quick actions (N for new task, / for search, Esc to close)
 - **Analytics Dashboard** - Visual insights with completion rates, priority distribution charts, and productivity metrics
 
 ---
