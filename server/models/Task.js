@@ -12,7 +12,7 @@ const taskSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["pending", "completed"],
+        enum: ["pending", "in-progress", "completed"],
         default: "pending"
     },
     priority: {
@@ -48,6 +48,23 @@ const taskSchema = new mongoose.Schema({
     notes: {
         type: String,
         default: ""
+    },
+    comments: {
+        type: [{
+            text: {
+                type: String,
+                required: true
+            },
+            author: {
+                type: String,
+                required: true
+            },
+            createdAt: {
+                type: Date,
+                default: Date.now
+            }
+        }],
+        default: []
     },
     order: {
         type: Number,

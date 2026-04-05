@@ -286,3 +286,62 @@ export const checkReminders = async (req, res) => {
         res.status(500).json({ message: "Server Error", error: error.message });
     }
 };
+
+
+// Add comment to task
+export const addComment = async (req, res) => {
+    try {
+        const { text } = req.body;
+        const task = await Task.findById(req.params.id);
+
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
+
+        if (task.user.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'Not authorized' });
+        }
+
+        const comment = {
+            text,
+            author: req.user.name,
+            createdAt: new Date()
+        };
+
+        task.comments.push(comment);
+        await task.save();
+
+        res.status(200).json({ 
+            message: 'Comment added',
+            task 
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Delete comment from task
+export const deleteComment = async (req, res) => {
+    try {
+        const { commentId } = req.params;
+        const task = await Task.findById(req.params.id);
+
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
+
+        if (task.user.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'Not authorized' });
+        }
+
+        task.comments = task.comments.filter(c => c._id.toString() !== commentId);
+        await task.save();
+
+        res.status(200).json({ 
+            message: 'Comment deleted',
+            task 
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

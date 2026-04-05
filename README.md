@@ -6,32 +6,30 @@ A modern, full-stack task management application built with the MERN stack (Mong
 
 ## ✨ Features
 
-### Core Features
-- User authentication with JWT
-- Secure password hashing with bcrypt
-- Task CRUD operations (Create, Read, Update, Delete)
-- User-specific tasks (each user sees only their own tasks)
-- Dark mode toggle with localStorage persistence
-- Responsive design for all devices
-
 ### Task Management
 - **Priority Levels** - High, Medium, Low with color coding
+- **Task Status** - To Do, In Progress, Done
 - **Due Dates** - Calendar picker with overdue detection
-- **Categories & Tags** - 5 predefined tags (Work, Personal, Shopping, Health, Other)
+- **Categories & Tags** - 5 predefined tags (Work, Personal, Shopping, Health, Urgent)
 - **Search** - Real-time task search
-- **Sort Options** - 5 sorting methods (date, priority, title, status, custom)
+- **Sort Options** - 6 sorting methods (date, priority, title, status, due date, custom)
 - **Drag & Drop** - Reorder tasks with custom sorting
 - **Subtasks** - Break tasks into smaller steps with progress tracking
 - **Task Notes** - Add detailed notes to tasks
+- **Task Comments** - Add comments and discussions to tasks with timestamps
 - **Bulk Actions** - Select and manage multiple tasks at once
 - **Task History** - View timeline of completed tasks
 
 ### Advanced Features
+- **Kanban Board View** - Visual board with 3 columns (To Do, In Progress, Done) and drag & drop between columns
+- **Quick Filters** - Smart filters (Today, This Week, Overdue, Urgent, Completed Today)
+- **Saved Views** - Save custom filter combinations for quick access
 - **Task Templates** - Save and reuse task templates
 - **Recurring Tasks** - Daily, weekly, or monthly auto-creation
 - **Export** - Download tasks as CSV or PDF
 - **Profile Management** - Update name, email, and password
 - **Keyboard Shortcuts** - Quick actions (N for new task, / for search, Esc to close)
+- **Analytics Dashboard** - Visual insights with completion rates, priority distribution charts, and productivity metrics
 
 ---
 
@@ -42,6 +40,7 @@ A modern, full-stack task management application built with the MERN stack (Mong
 - Vite (build tool)
 - Axios (HTTP client)
 - React Context (state management)
+- Lucide React (icons)
 - CSS3 with custom properties
 
 ### Backend
@@ -54,7 +53,7 @@ A modern, full-stack task management application built with the MERN stack (Mong
 
 ---
 
-## � Installation
+## 📦 Installation
 
 ### Prerequisites
 - Node.js (v18 or higher)
@@ -142,7 +141,36 @@ TasQ/
 
 ---
 
-## � Security
+## 🔑 Key Features Explained
+
+### Kanban Board View
+Switch between List and Board view with a single click. The Kanban board provides a visual workflow with three columns:
+- **To Do** - Tasks that haven't been started
+- **In Progress** - Tasks currently being worked on
+- **Done** - Completed tasks
+
+Drag and drop tasks between columns to update their status instantly.
+
+### Quick Filters & Saved Views
+- **Quick Filters**: One-click access to common views (Today, This Week, Overdue, Urgent, Completed Today)
+- **Saved Views**: Save any combination of filters (status, priority, tags, sort) and access them instantly
+
+### Task Comments
+Add comments to tasks for discussions, updates, and collaboration. Each comment shows:
+- Author name
+- Timestamp
+- Delete option
+
+### Analytics Dashboard
+Track your productivity with visual insights:
+- Total tasks, completed, pending, completion rate
+- Priority distribution chart
+- Completion progress circle
+- Success banner for 80%+ completion rate
+
+---
+
+## 🔒 Security
 
 - Password hashing with bcrypt
 - JWT token authentication
@@ -161,7 +189,16 @@ Future enhancements:
 - Mobile app
 - Team collaboration
 - Task attachments
+- Time tracking
 - Advanced analytics
+
+---
+
+## 🚀 Deployment
+
+The app is deployed and live:
+- **Frontend**: https://saas-task-manager-flax.vercel.app
+- **Backend**: https://saas-task-manager-mm9w.onrender.com
 
 ---
 
@@ -171,4 +208,3 @@ Future enhancements:
 Every competition taught me something new — teamwork, speed, pressure handling, and most importantly, consistency.
 
 🎯 *Let the work be your worship, and excellence be your habit.*
-

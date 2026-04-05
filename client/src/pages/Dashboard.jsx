@@ -2,12 +2,12 @@ import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
-import { getTasks, createTask, updateTask, deleteTask, checkRecurringTasks, checkReminders } from '../api/tasks';
+import { getTasks, createTask, updateTask, deleteTask, checkRecurringTasks, checkReminders, addComment, deleteComment } from '../api/tasks';
 import { getTemplates, createTemplate, deleteTemplate } from '../api/templates';
 import Toast from '../components/Toast';
 import AnimatedCounter from '../components/AnimatedCounter';
 import TaskSkeleton from '../components/TaskSkeleton';
-import { Sun, Moon, User, BarChart3, Download, FileText, History, Plus, Search, LogOut, AlertCircle, Circle, Calendar, Bell, Repeat } from 'lucide-react';
+import { Sun, Moon, User, BarChart3, Download, FileText, History, Plus, Search, LogOut, AlertCircle, Circle, Calendar, Bell, Repeat, Save, X, Bookmark, CheckCircle2, List, LayoutGrid, Clock, MessageCircle, Send, Trash2 } from 'lucide-react';
 
 const Dashboard = () => {
     const [tasks, setTasks] = useState([]);
@@ -50,12 +50,27 @@ const Dashboard = () => {
     const [reminderDate, setReminderDate] = useState('');
     const [editReminderEnabled, setEditReminderEnabled] = useState(false);
     const [editReminderDate, setEditReminderDate] = useState('');
+    const [savedViews, setSavedViews] = useState([]);
+    const [showSaveView, setShowSaveView] = useState(false);
+    const [viewName, setViewName] = useState('');
+    const [quickFilter, setQuickFilter] = useState('');
+    const [viewMode, setViewMode] = useState('list'); // 'list' or 'board'
+    const [newComment, setNewComment] = useState('');
+    const [showComments, setShowComments] = useState(null); // taskId to show comments for
 
     const { user, logout } = useContext(AuthContext);
     const { colors, isDark, toggleTheme } = useContext(ThemeContext);
     const navigate = useNavigate();
 
     const availableTags = ['Work', 'Personal', 'Shopping', 'Urgent', 'Health'];
+
+    // Load saved views from localStorage
+    useEffect(() => {
+        const saved = localStorage.getItem('tasq-saved-views');
+        if (saved) {
+            setSavedViews(JSON.parse(saved));
+        }
+    }, []);
 
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
@@ -360,13 +375,123 @@ const Dashboard = () => {
         }
     };
 
+    // Saved Views Functions
+    const saveCurrentView = () => {
+        if (!viewName.trim()) {
+            showToast('Please enter a view name', 'error');
+            return;
+        }
+
+        const newView = {
+            id: Date.now(),
+            name: viewName,
+            filters: {
+                status: filter,
+                priority: priorityFilter,
+                tag: tagFilter,
+                sortBy: sortBy
+            }
+        };
+
+        const updated = [...savedViews, newView];
+        setSavedViews(updated);
+        localStorage.setItem('tasq-saved-views', JSON.stringify(updated));
+        setViewName('');
+        setShowSaveView(false);
+        showToast(`View "${viewName}" saved!`, 'success');
+    };
+
+    const loadSavedView = (view) => {
+        setFilter(view.filters.status);
+        setPriorityFilter(view.filters.priority);
+        setTagFilter(view.filters.tag);
+        setSortBy(view.filters.sortBy);
+        setQuickFilter('');
+        showToast(`Loaded "${view.name}"`, 'success');
+    };
+
+    const deleteSavedView = (id, name) => {
+        if (!confirm(`Delete view "${name}"?`)) return;
+        
+        const updated = savedViews.filter(v => v.id !== id);
+        setSavedViews(updated);
+        localStorage.setItem('tasq-saved-views', JSON.stringify(updated));
+        showToast('View deleted', 'success');
+    };
+
+    // Quick Filter Functions
+    const applyQuickFilter = (filterType) => {
+        setQuickFilter(filterType);
+        setFilter('');
+        setPriorityFilter('');
+        setTagFilter('');
+    };
+
+    const getQuickFilteredTasks = () => {
+        if (!quickFilter) return tasks;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        switch (quickFilter) {
+            case 'today':
+                return tasks.filter(task => {
+                    if (!task.dueDate) return false;
+                    const due = new Date(task.dueDate);
+                    due.setHours(0, 0, 0, 0);
+                    return due.getTime() === today.getTime();
+                });
+            
+            case 'week':
+                const weekEnd = new Date(today);
+                weekEnd.setDate(today.getDate() + 7);
+                return tasks.filter(task => {
+                    if (!task.dueDate) return false;
+                    const due = new Date(task.dueDate);
+                    return due >= today && due <= weekEnd;
+                });
+            
+            case 'overdue':
+                return tasks.filter(task => {
+                    if (!task.dueDate || task.status === 'completed') return false;
+                    const due = new Date(task.dueDate);
+                    due.setHours(0, 0, 0, 0);
+                    return due < today;
+                });
+            
+            case 'urgent':
+                const urgentEnd = new Date(today);
+                urgentEnd.setDate(today.getDate() + 3);
+                return tasks.filter(task => {
+                    if (task.status === 'completed') return false;
+                    if (task.priority !== 'high') return false;
+                    if (!task.dueDate) return task.priority === 'high';
+                    const due = new Date(task.dueDate);
+                    return due <= urgentEnd;
+                });
+            
+            case 'completed-today':
+                return tasks.filter(task => {
+                    if (task.status !== 'completed') return false;
+                    const updated = new Date(task.updatedAt);
+                    updated.setHours(0, 0, 0, 0);
+                    return updated.getTime() === today.getTime();
+                });
+            
+            default:
+                return tasks;
+        }
+    };
+
     // Filter tasks based on search query
+    const baseFilteredTasks = quickFilter ? getQuickFilteredTasks() : tasks;
+    
     const filteredTasks = searchQuery
-        ? tasks.filter(task =>
+        ? baseFilteredTasks.filter(task =>
             task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (task.description && task.description.toLowerCase().includes(searchQuery.toLowerCase()))
         )
-        : tasks;
+        : baseFilteredTasks;
 
     // Filter by tag
     const tagFilteredTasks = tagFilter
@@ -732,6 +857,34 @@ const Dashboard = () => {
         } catch (err) {
             console.error('Error deleting template:', err);
             showToast('Failed to delete template', 'error');
+        }
+    };
+
+    // Comment functions
+    const handleAddComment = async (taskId) => {
+        if (!newComment.trim()) return;
+
+        try {
+            await addComment(taskId, newComment);
+            setNewComment('');
+            fetchTasks();
+            showToast('Comment added!', 'success');
+        } catch (err) {
+            console.error('Error adding comment:', err);
+            showToast('Failed to add comment', 'error');
+        }
+    };
+
+    const handleDeleteComment = async (taskId, commentId) => {
+        if (!confirm('Delete this comment?')) return;
+
+        try {
+            await deleteComment(taskId, commentId);
+            fetchTasks();
+            showToast('Comment deleted!', 'success');
+        } catch (err) {
+            console.error('Error deleting comment:', err);
+            showToast('Failed to delete comment', 'error');
         }
     };
 
@@ -1501,6 +1654,56 @@ const Dashboard = () => {
                             <option value="dueDate">Due Date (Soonest First)</option>
                             <option value="custom">Custom Order (Drag & Drop)</option>
                         </select>
+                        {/* View Mode Toggle */}
+                        <div style={{
+                            display: 'flex',
+                            gap: '4px',
+                            background: colors.bg,
+                            border: `1px solid ${colors.border}`,
+                            borderRadius: '8px',
+                            padding: '4px'
+                        }}>
+                            <button
+                                onClick={() => setViewMode('list')}
+                                style={{
+                                    padding: '8px 12px',
+                                    background: viewMode === 'list' ? colors.primary : 'transparent',
+                                    color: viewMode === 'list' ? 'white' : colors.text,
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <List size={16} />
+                                List
+                            </button>
+                            <button
+                                onClick={() => setViewMode('board')}
+                                style={{
+                                    padding: '8px 12px',
+                                    background: viewMode === 'board' ? colors.primary : 'transparent',
+                                    color: viewMode === 'board' ? 'white' : colors.text,
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <LayoutGrid size={16} />
+                                Board
+                            </button>
+                        </div>
                         {sortBy === 'custom' && (
                             <div style={{
                                 padding: '8px 12px',
@@ -1878,6 +2081,212 @@ const Dashboard = () => {
                     </div>
                 )}
 
+                {/* Quick Filters & Saved Views */}
+                <div style={{ marginBottom: '20px' }}>
+                    <div style={{
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        color: colors.textSecondary,
+                        marginBottom: '8px'
+                    }}>Quick Filters</div>
+                    <div style={{
+                        display: 'flex',
+                        gap: '8px',
+                        marginBottom: '16px',
+                        flexWrap: 'wrap'
+                    }}>
+                        {[
+                            { label: 'Today', value: 'today', icon: <Calendar size={14} /> },
+                            { label: 'This Week', value: 'week', icon: <Calendar size={14} /> },
+                            { label: 'Overdue', value: 'overdue', icon: <AlertCircle size={14} /> },
+                            { label: 'Urgent', value: 'urgent', icon: <AlertCircle size={14} /> },
+                            { label: 'Completed Today', value: 'completed-today', icon: <CheckCircle2 size={14} /> }
+                        ].map(({ label, value, icon }) => (
+                            <button
+                                key={value}
+                                onClick={() => applyQuickFilter(value)}
+                                style={{
+                                    padding: '8px 16px',
+                                    background: quickFilter === value ? colors.primary : colors.bg,
+                                    color: quickFilter === value ? 'white' : colors.text,
+                                    border: `1px solid ${quickFilter === value ? colors.primary : colors.border}`,
+                                    borderRadius: '8px',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px'
+                                }}
+                            >
+                                {icon}
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Saved Views */}
+                    {savedViews.length > 0 && (
+                        <>
+                            <div style={{
+                                fontSize: '13px',
+                                fontWeight: '500',
+                                color: colors.textSecondary,
+                                marginBottom: '8px',
+                                marginTop: '16px'
+                            }}>Saved Views</div>
+                            <div style={{
+                                display: 'flex',
+                                gap: '8px',
+                                marginBottom: '16px',
+                                flexWrap: 'wrap'
+                            }}>
+                                {savedViews.map(view => (
+                                    <div key={view.id} style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        padding: '8px 12px',
+                                        background: colors.bg,
+                                        border: `1px solid ${colors.border}`,
+                                        borderRadius: '8px'
+                                    }}>
+                                        <button
+                                            onClick={() => loadSavedView(view)}
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                color: colors.text,
+                                                fontSize: '14px',
+                                                fontWeight: '500',
+                                                cursor: 'pointer',
+                                                padding: '0',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px'
+                                            }}
+                                        >
+                                            <Bookmark size={14} />
+                                            {view.name}
+                                        </button>
+                                        <button
+                                            onClick={() => deleteSavedView(view.id, view.name)}
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                color: colors.textSecondary,
+                                                cursor: 'pointer',
+                                                padding: '4px',
+                                                display: 'flex',
+                                                alignItems: 'center'
+                                            }}
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
+
+                    {/* Save Current View Button */}
+                    {(filter || priorityFilter || tagFilter) && !showSaveView && (
+                        <button
+                            onClick={() => setShowSaveView(true)}
+                            style={{
+                                padding: '8px 16px',
+                                background: colors.success,
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                marginBottom: '16px'
+                            }}
+                        >
+                            <Save size={14} />
+                            Save Current View
+                        </button>
+                    )}
+
+                    {/* Save View Form */}
+                    {showSaveView && (
+                        <div style={{
+                            background: colors.card,
+                            border: `1px solid ${colors.border}`,
+                            borderRadius: '8px',
+                            padding: '16px',
+                            marginBottom: '16px'
+                        }}>
+                            <div style={{
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: colors.text,
+                                marginBottom: '12px'
+                            }}>Save View</div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <input
+                                    type="text"
+                                    placeholder="View name..."
+                                    value={viewName}
+                                    onChange={(e) => setViewName(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && saveCurrentView()}
+                                    style={{
+                                        flex: 1,
+                                        padding: '8px 12px',
+                                        border: `1px solid ${colors.border}`,
+                                        borderRadius: '6px',
+                                        fontSize: '14px',
+                                        outline: 'none',
+                                        background: colors.bg,
+                                        color: colors.text
+                                    }}
+                                    autoFocus
+                                />
+                                <button
+                                    onClick={saveCurrentView}
+                                    style={{
+                                        padding: '8px 16px',
+                                        background: colors.success,
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Save
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setShowSaveView(false);
+                                        setViewName('');
+                                    }}
+                                    style={{
+                                        padding: '8px 16px',
+                                        background: colors.bg,
+                                        border: `1px solid ${colors.border}`,
+                                        color: colors.text,
+                                        borderRadius: '6px',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 {/* Filter */}
                 <div style={{ marginBottom: '20px' }}>
                     <div style={{
@@ -1894,7 +2303,8 @@ const Dashboard = () => {
                     }}>
                         {[
                             { label: 'All', value: '' },
-                            { label: 'Pending', value: 'pending' },
+                            { label: 'To Do', value: 'pending' },
+                            { label: 'In Progress', value: 'in-progress' },
                             { label: 'Completed', value: 'completed' }
                         ].map(({ label, value }) => (
                             <button
@@ -2138,6 +2548,246 @@ const Dashboard = () => {
                             <p style={{ color: colors.textSecondary, fontSize: '15px' }}>
                                 {searchQuery ? 'No tasks found matching your search' : 'No tasks yet. Create your first one!'}
                             </p>
+                        </div>
+                    ) : viewMode === 'board' ? (
+                        /* Kanban Board View */
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '20px',
+                            marginBottom: '24px'
+                        }}>
+                            {['pending', 'in-progress', 'completed'].map(status => {
+                                const columnTasks = sortedTasks.filter(t => t.status === status);
+                                const columnConfig = {
+                                    'pending': { title: 'To Do', icon: <Circle size={18} />, color: colors.textSecondary },
+                                    'in-progress': { title: 'In Progress', icon: <Clock size={18} />, color: colors.warning },
+                                    'completed': { title: 'Done', icon: <CheckCircle2 size={18} />, color: colors.success }
+                                };
+                                const config = columnConfig[status];
+                                
+                                return (
+                                    <div
+                                        key={status}
+                                        onDragOver={(e) => e.preventDefault()}
+                                        onDrop={async (e) => {
+                                            e.preventDefault();
+                                            const taskId = e.dataTransfer.getData('taskId');
+                                            if (taskId) {
+                                                try {
+                                                    await updateTask(taskId, { status });
+                                                    fetchTasks();
+                                                    showToast(`Task moved to ${config.title}`, 'success');
+                                                } catch (err) {
+                                                    showToast('Failed to move task', 'error');
+                                                }
+                                            }
+                                        }}
+                                        style={{
+                                            background: colors.card,
+                                            border: `1px solid ${colors.border}`,
+                                            borderRadius: '12px',
+                                            padding: '16px',
+                                            minHeight: '500px'
+                                        }}
+                                    >
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            marginBottom: '16px',
+                                            paddingBottom: '12px',
+                                            borderBottom: `2px solid ${colors.border}`
+                                        }}>
+                                            <div style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                fontSize: '16px',
+                                                fontWeight: '600',
+                                                color: config.color
+                                            }}>
+                                                {config.icon}
+                                                {config.title}
+                                            </div>
+                                            <div style={{
+                                                background: colors.bg,
+                                                padding: '4px 12px',
+                                                borderRadius: '12px',
+                                                fontSize: '13px',
+                                                fontWeight: '600',
+                                                color: colors.textSecondary
+                                            }}>
+                                                {columnTasks.length}
+                                            </div>
+                                        </div>
+                                        
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                            {columnTasks.map(task => (
+                                                <div
+                                                    key={task._id}
+                                                    draggable
+                                                    onDragStart={(e) => {
+                                                        e.dataTransfer.setData('taskId', task._id);
+                                                        e.currentTarget.style.opacity = '0.5';
+                                                    }}
+                                                    onDragEnd={(e) => {
+                                                        e.currentTarget.style.opacity = '1';
+                                                    }}
+                                                    style={{
+                                                        background: colors.bg,
+                                                        border: `1px solid ${colors.border}`,
+                                                        borderRadius: '8px',
+                                                        padding: '12px',
+                                                        cursor: 'grab',
+                                                        transition: 'all 0.2s',
+                                                        borderLeft: `3px solid ${
+                                                            task.priority === 'high' ? colors.danger :
+                                                            task.priority === 'medium' ? colors.warning :
+                                                            colors.success
+                                                        }`
+                                                    }}
+                                                    onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                                    onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                                                >
+                                                    <div style={{
+                                                        fontSize: '14px',
+                                                        fontWeight: '600',
+                                                        color: colors.text,
+                                                        marginBottom: '8px',
+                                                        wordBreak: 'break-word'
+                                                    }}>
+                                                        {task.title}
+                                                    </div>
+                                                    {task.description && (
+                                                        <div style={{
+                                                            fontSize: '12px',
+                                                            color: colors.textSecondary,
+                                                            marginBottom: '8px',
+                                                            lineHeight: '1.4'
+                                                        }}>
+                                                            {task.description.length > 80 
+                                                                ? task.description.substring(0, 80) + '...' 
+                                                                : task.description}
+                                                        </div>
+                                                    )}
+                                                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                                                        <span style={{
+                                                            fontSize: '11px',
+                                                            padding: '3px 8px',
+                                                            background: task.priority === 'high' ? 'rgba(239, 68, 68, 0.1)' : 
+                                                                       task.priority === 'medium' ? 'rgba(245, 158, 11, 0.1)' : 
+                                                                       'rgba(16, 185, 129, 0.1)',
+                                                            color: task.priority === 'high' ? colors.danger : 
+                                                                   task.priority === 'medium' ? colors.warning : 
+                                                                   colors.success,
+                                                            borderRadius: '4px',
+                                                            fontWeight: '600'
+                                                        }}>
+                                                            {task.priority}
+                                                        </span>
+                                                        {task.dueDate && (
+                                                            <span style={{
+                                                                fontSize: '11px',
+                                                                padding: '3px 8px',
+                                                                background: isOverdue(task.dueDate) && task.status !== 'completed' ? 
+                                                                           'rgba(239, 68, 68, 0.1)' : 
+                                                                           'rgba(99, 102, 241, 0.1)',
+                                                                color: isOverdue(task.dueDate) && task.status !== 'completed' ? 
+                                                                       colors.danger : 
+                                                                       colors.primary,
+                                                                borderRadius: '4px',
+                                                                fontWeight: '600',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '4px'
+                                                            }}>
+                                                                <Calendar size={10} />
+                                                                {formatDate(task.dueDate)}
+                                                            </span>
+                                                        )}
+                                                        {task.tags && task.tags.slice(0, 2).map(tag => (
+                                                            <span key={tag} style={{
+                                                                fontSize: '11px',
+                                                                padding: '3px 8px',
+                                                                background: getTagColor(tag),
+                                                                color: 'white',
+                                                                borderRadius: '4px',
+                                                                fontWeight: '600'
+                                                            }}>
+                                                                {tag}
+                                                            </span>
+                                                        ))}
+                                                        {task.tags && task.tags.length > 2 && (
+                                                            <span style={{
+                                                                fontSize: '11px',
+                                                                padding: '3px 8px',
+                                                                color: colors.textSecondary,
+                                                                fontWeight: '600'
+                                                            }}>
+                                                                +{task.tags.length - 2}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {task.subtasks && task.subtasks.length > 0 && (
+                                                        <div style={{
+                                                            fontSize: '11px',
+                                                            color: colors.textSecondary,
+                                                            marginBottom: '8px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '4px'
+                                                        }}>
+                                                            <CheckCircle2 size={12} />
+                                                            {task.subtasks.filter(s => s.completed).length}/{task.subtasks.length} subtasks
+                                                        </div>
+                                                    )}
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        gap: '8px',
+                                                        marginTop: '8px',
+                                                        paddingTop: '8px',
+                                                        borderTop: `1px solid ${colors.border}`
+                                                    }}>
+                                                        <button
+                                                            onClick={() => handleEdit(task)}
+                                                            style={{
+                                                                flex: 1,
+                                                                padding: '6px',
+                                                                background: colors.primary,
+                                                                color: 'white',
+                                                                border: 'none',
+                                                                borderRadius: '6px',
+                                                                fontSize: '12px',
+                                                                fontWeight: '500',
+                                                                cursor: 'pointer'
+                                                            }}
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(task._id)}
+                                                            style={{
+                                                                flex: 1,
+                                                                padding: '6px',
+                                                                background: colors.danger,
+                                                                color: 'white',
+                                                                border: 'none',
+                                                                borderRadius: '6px',
+                                                                fontSize: '12px',
+                                                                fontWeight: '500',
+                                                                cursor: 'pointer'
+                                                            }}
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     ) : (
                         sortedTasks.map((task) => (
@@ -2548,6 +3198,155 @@ const Dashboard = () => {
                                                 onBlur={(e) => e.target.style.borderColor = colors.border}
                                             />
                                         </div>
+
+                                        {/* Comments Section */}
+                                        <div style={{ marginBottom: '16px' }}>
+                                            <div style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                marginBottom: '12px'
+                                            }}>
+                                                <label style={{
+                                                    fontSize: '14px',
+                                                    fontWeight: '600',
+                                                    color: colors.text,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '6px'
+                                                }}>
+                                                    <MessageCircle size={16} />
+                                                    Comments ({task.comments?.length || 0})
+                                                </label>
+                                            </div>
+
+                                            {/* Comment List */}
+                                            {task.comments && task.comments.length > 0 && (
+                                                <div style={{
+                                                    maxHeight: '200px',
+                                                    overflowY: 'auto',
+                                                    marginBottom: '12px',
+                                                    padding: '8px',
+                                                    background: colors.bg,
+                                                    borderRadius: '8px',
+                                                    border: `1px solid ${colors.border}`
+                                                }}>
+                                                    {task.comments.map((comment) => (
+                                                        <div
+                                                            key={comment._id}
+                                                            style={{
+                                                                padding: '12px',
+                                                                marginBottom: '8px',
+                                                                background: colors.card,
+                                                                borderRadius: '6px',
+                                                                border: `1px solid ${colors.border}`
+                                                            }}
+                                                        >
+                                                            <div style={{
+                                                                display: 'flex',
+                                                                justifyContent: 'space-between',
+                                                                alignItems: 'flex-start',
+                                                                marginBottom: '6px'
+                                                            }}>
+                                                                <div style={{
+                                                                    fontSize: '12px',
+                                                                    fontWeight: '600',
+                                                                    color: colors.primary
+                                                                }}>
+                                                                    {comment.author}
+                                                                </div>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <div style={{
+                                                                        fontSize: '11px',
+                                                                        color: colors.textSecondary
+                                                                    }}>
+                                                                        {new Date(comment.createdAt).toLocaleString('en-US', {
+                                                                            month: 'short',
+                                                                            day: 'numeric',
+                                                                            hour: '2-digit',
+                                                                            minute: '2-digit'
+                                                                        })}
+                                                                    </div>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleDeleteComment(task._id, comment._id)}
+                                                                        style={{
+                                                                            background: 'none',
+                                                                            border: 'none',
+                                                                            color: colors.danger,
+                                                                            cursor: 'pointer',
+                                                                            padding: '2px',
+                                                                            display: 'flex',
+                                                                            alignItems: 'center'
+                                                                        }}
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <div style={{
+                                                                fontSize: '13px',
+                                                                color: colors.text,
+                                                                lineHeight: '1.5',
+                                                                wordBreak: 'break-word'
+                                                            }}>
+                                                                {comment.text}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {/* Add Comment */}
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Add a comment..."
+                                                    value={newComment}
+                                                    onChange={(e) => setNewComment(e.target.value)}
+                                                    onKeyPress={(e) => {
+                                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                                            e.preventDefault();
+                                                            handleAddComment(task._id);
+                                                        }
+                                                    }}
+                                                    style={{
+                                                        flex: 1,
+                                                        padding: '10px 14px',
+                                                        border: `1px solid ${colors.border}`,
+                                                        borderRadius: '8px',
+                                                        fontSize: '14px',
+                                                        outline: 'none',
+                                                        background: colors.bg,
+                                                        color: colors.text,
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                    onFocus={(e) => e.target.style.borderColor = colors.primary}
+                                                    onBlur={(e) => e.target.style.borderColor = colors.border}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleAddComment(task._id)}
+                                                    disabled={!newComment.trim()}
+                                                    style={{
+                                                        padding: '10px 16px',
+                                                        background: newComment.trim() ? colors.primary : colors.border,
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        borderRadius: '8px',
+                                                        cursor: newComment.trim() ? 'pointer' : 'not-allowed',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        fontSize: '14px',
+                                                        fontWeight: '500'
+                                                    }}
+                                                >
+                                                    <Send size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+
                                         <div style={{ display: 'flex', gap: '12px' }}>
                                             <button 
                                                 type="submit" 

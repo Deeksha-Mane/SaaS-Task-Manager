@@ -34,3 +34,15 @@ export const checkReminders = async () => {
     const response = await api.post('/tasks/check-reminders');
     return response.data;
 };
+
+// Add comment to task
+export const addComment = async (taskId, text) => {
+    const response = await api.post(`/tasks/${taskId}/comments`, { text });
+    return response.data;
+};
+
+// Delete comment from task
+export const deleteComment = async (taskId, commentId) => {
+    const response = await api.delete(`/tasks/${taskId}/comments/${commentId}`);
+    return response.data;
+};

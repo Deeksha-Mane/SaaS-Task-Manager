@@ -5,7 +5,9 @@ import {
     updateTask, 
     deleteTask,
     checkRecurringTasks,
-    checkReminders
+    checkReminders,
+    addComment,
+    deleteComment
 } from "../controllers/taskController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -18,5 +20,7 @@ router.put("/:id", protect, updateTask);
 router.delete("/:id", protect, deleteTask);
 router.post("/check-recurring", protect, checkRecurringTasks);
 router.post("/check-reminders", protect, checkReminders);
+router.post("/:id/comments", protect, addComment);
+router.delete("/:id/comments/:commentId", protect, deleteComment);
 
 export default router;
