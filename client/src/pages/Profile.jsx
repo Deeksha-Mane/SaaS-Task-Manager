@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
 import { getProfile, updateProfile } from '../api/auth';
 import Toast from '../components/Toast';
+import { Sun, Moon } from 'lucide-react';
 
 const Profile = () => {
     const [name, setName] = useState('');
@@ -122,6 +123,7 @@ const Profile = () => {
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                         <button
                             onClick={toggleTheme}
+                            className="dashboard-icon-button"
                             style={{
                                 padding: '8px 16px',
                                 background: colors.bg,
@@ -129,12 +131,13 @@ const Profile = () => {
                                 borderRadius: '8px',
                                 cursor: 'pointer',
                                 fontSize: '18px',
-                                transition: 'all 0.2s'
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                color: colors.text
                             }}
-                            onMouseOver={(e) => e.target.style.background = colors.cardHover}
-                            onMouseOut={(e) => e.target.style.background = colors.bg}
                         >
-                            {isDark ? '☀️' : '🌙'}
+                            {isDark ? <Sun size={20} /> : <Moon size={20} />}
                         </button>
                         <button
                             onClick={() => navigate('/dashboard')}

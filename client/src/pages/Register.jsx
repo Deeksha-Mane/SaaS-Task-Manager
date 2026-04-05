@@ -58,11 +58,11 @@ const Register = () => {
                         fontWeight: '600',
                         color: colors.text,
                         marginBottom: '8px'
-                    }}>Create account</h2>
+                    }}>Welcome to TasQ</h2>
                     <p style={{
                         color: colors.textSecondary,
                         fontSize: '15px'
-                    }}>Start organizing your tasks today</p>
+                    }}>Create your account to get started</p>
                 </div>
 
                 {error && (

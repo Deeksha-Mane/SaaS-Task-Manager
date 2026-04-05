@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
+import Analytics from './pages/Analytics';
 import AuthCallback from './pages/AuthCallback';
 
 // Protected Route Component
@@ -39,6 +40,14 @@ function App() {
                             element={
                                 <ProtectedRoute>
                                     <Profile />
+                                </ProtectedRoute>
+                            } 
+                        />
+                        <Route 
+                            path="/analytics" 
+                            element={
+                                <ProtectedRoute>
+                                    <Analytics />
                                 </ProtectedRoute>
                             } 
                         />

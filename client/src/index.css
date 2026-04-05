@@ -14,3 +14,9 @@ body {
 #root {
   min-height: 100vh;
 }
+
+/* Dashboard button hover fix */
+.dashboard-icon-button:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}

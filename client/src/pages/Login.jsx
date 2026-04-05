@@ -57,11 +57,11 @@ const Login = () => {
                         fontWeight: '600',
                         color: colors.text,
                         marginBottom: '8px'
-                    }}>Welcome back</h2>
+                    }}>Welcome back to TasQ</h2>
                     <p style={{
                         color: colors.textSecondary,
                         fontSize: '15px'
-                    }}>Sign in to continue to your tasks</p>
+                    }}>Sign in to manage your tasks</p>
                 </div>
 
                 {error && (

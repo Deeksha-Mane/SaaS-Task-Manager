@@ -7,6 +7,7 @@ import { getTemplates, createTemplate, deleteTemplate } from '../api/templates';
 import Toast from '../components/Toast';
 import AnimatedCounter from '../components/AnimatedCounter';
 import TaskSkeleton from '../components/TaskSkeleton';
+import { Sun, Moon, User, BarChart3, Download, FileText, History, Plus, Search, LogOut, AlertCircle, Circle, Calendar, Bell, Repeat } from 'lucide-react';
 
 const Dashboard = () => {
     const [tasks, setTasks] = useState([]);
@@ -836,7 +837,7 @@ const Dashboard = () => {
                             fontWeight: '600',
                             color: colors.text,
                             marginBottom: '4px'
-                        }}>Tasks</h1>
+                        }}>TasQ</h1>
                         <p style={{
                             color: colors.textSecondary,
                             fontSize: '14px'
@@ -880,6 +881,7 @@ const Dashboard = () => {
                         </div>
                         <button
                             onClick={toggleTheme}
+                            className="dashboard-icon-button"
                             style={{
                                 padding: '8px 16px',
                                 background: colors.bg,
@@ -887,15 +889,18 @@ const Dashboard = () => {
                                 borderRadius: '8px',
                                 cursor: 'pointer',
                                 fontSize: '18px',
-                                transition: 'all 0.2s'
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                color: colors.text
                             }}
-                            onMouseOver={(e) => e.target.style.background = colors.cardHover}
-                            onMouseOut={(e) => e.target.style.background = colors.bg}
                         >
-                            {isDark ? '☀️' : '🌙'}
+                            {isDark ? <Sun size={18} /> : <Moon size={18} />}
                         </button>
                         <button
                             onClick={() => navigate('/profile')}
+                            className="dashboard-icon-button"
                             style={{
                                 padding: '8px 16px',
                                 background: colors.bg,
@@ -905,12 +910,33 @@ const Dashboard = () => {
                                 fontSize: '14px',
                                 fontWeight: '500',
                                 cursor: 'pointer',
-                                transition: 'all 0.2s'
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
                             }}
-                            onMouseOver={(e) => e.target.style.background = colors.cardHover}
-                            onMouseOut={(e) => e.target.style.background = colors.bg}
                         >
-                            👤 Profile
+                            <User size={16} /> Profile
+                        </button>
+                        <button
+                            onClick={() => navigate('/analytics')}
+                            className="dashboard-icon-button"
+                            style={{
+                                padding: '8px 16px',
+                                background: colors.bg,
+                                border: `1px solid ${colors.border}`,
+                                color: colors.text,
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}
+                        >
+                            <BarChart3 size={16} /> Analytics
                         </button>
                         <button 
                             onClick={logout}
@@ -1010,6 +1036,7 @@ const Dashboard = () => {
                         <button
                             onClick={exportToCSV}
                             disabled={sortedTasks.length === 0}
+                            className="dashboard-icon-button"
                             style={{
                                 padding: '16px 24px',
                                 background: sortedTasks.length === 0 ? colors.border : colors.bg,
@@ -1019,16 +1046,18 @@ const Dashboard = () => {
                                 fontSize: '15px',
                                 fontWeight: '600',
                                 cursor: sortedTasks.length === 0 ? 'not-allowed' : 'pointer',
-                                transition: 'all 0.2s'
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
                             }}
-                            onMouseOver={(e) => sortedTasks.length > 0 && (e.target.style.background = colors.cardHover)}
-                            onMouseOut={(e) => sortedTasks.length > 0 && (e.target.style.background = colors.bg)}
                         >
-                            📊 Export CSV
+                            <Download size={16} /> Export CSV
                         </button>
                         <button
                             onClick={exportToPDF}
                             disabled={sortedTasks.length === 0}
+                            className="dashboard-icon-button"
                             style={{
                                 padding: '16px 24px',
                                 background: sortedTasks.length === 0 ? colors.border : colors.bg,
@@ -1038,15 +1067,17 @@ const Dashboard = () => {
                                 fontSize: '15px',
                                 fontWeight: '600',
                                 cursor: sortedTasks.length === 0 ? 'not-allowed' : 'pointer',
-                                transition: 'all 0.2s'
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
                             }}
-                            onMouseOver={(e) => sortedTasks.length > 0 && (e.target.style.background = colors.cardHover)}
-                            onMouseOut={(e) => sortedTasks.length > 0 && (e.target.style.background = colors.bg)}
                         >
-                            📄 Export PDF
+                            <FileText size={16} /> Export PDF
                         </button>
                         <button
                             onClick={() => setShowTemplates(!showTemplates)}
+                            className="dashboard-icon-button"
                             style={{
                                 padding: '16px 24px',
                                 background: showTemplates ? colors.primary : colors.bg,
@@ -1058,13 +1089,12 @@ const Dashboard = () => {
                                 cursor: 'pointer',
                                 transition: 'all 0.2s'
                             }}
-                            onMouseOver={(e) => !showTemplates && (e.target.style.background = colors.cardHover)}
-                            onMouseOut={(e) => !showTemplates && (e.target.style.background = colors.bg)}
                         >
                             📋 Templates ({templates.length})
                         </button>
                         <button
                             onClick={() => setShowHistory(!showHistory)}
+                            className="dashboard-icon-button"
                             style={{
                                 padding: '16px 24px',
                                 background: showHistory ? colors.primary : colors.bg,
@@ -1074,12 +1104,13 @@ const Dashboard = () => {
                                 fontSize: '15px',
                                 fontWeight: '600',
                                 cursor: 'pointer',
-                                transition: 'all 0.2s'
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
                             }}
-                            onMouseOver={(e) => !showHistory && (e.target.style.background = colors.cardHover)}
-                            onMouseOut={(e) => !showHistory && (e.target.style.background = colors.bg)}
                         >
-                            📜 History
+                            <History size={16} /> History
                         </button>
                     </div>
                 )}
@@ -1408,27 +1439,43 @@ const Dashboard = () => {
                     marginBottom: '24px',
                     transition: 'all 0.3s ease'
                 }}>
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                        <input
-                            type="text"
-                            placeholder="🔍 Search tasks..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{
-                                flex: 1,
-                                minWidth: '200px',
-                                padding: '12px 16px',
-                                border: `1px solid ${colors.border}`,
-                                borderRadius: '8px',
-                                fontSize: '15px',
-                                outline: 'none',
-                                background: colors.bg,
-                                color: colors.text,
-                                transition: 'all 0.2s'
-                            }}
-                            onFocus={(e) => e.target.style.borderColor = colors.primary}
-                            onBlur={(e) => e.target.style.borderColor = colors.border}
-                        />
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <div style={{ 
+                            position: 'relative', 
+                            flex: 1, 
+                            minWidth: '200px',
+                            display: 'flex',
+                            alignItems: 'center'
+                        }}>
+                            <Search 
+                                size={18} 
+                                style={{ 
+                                    position: 'absolute', 
+                                    left: '12px', 
+                                    color: colors.textSecondary,
+                                    pointerEvents: 'none'
+                                }} 
+                            />
+                            <input
+                                type="text"
+                                placeholder="Search tasks..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px 12px 40px',
+                                    border: `1px solid ${colors.border}`,
+                                    borderRadius: '8px',
+                                    fontSize: '15px',
+                                    outline: 'none',
+                                    background: colors.bg,
+                                    color: colors.text,
+                                    transition: 'all 0.2s'
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = colors.primary}
+                                onBlur={(e) => e.target.style.borderColor = colors.border}
+                            />
+                        </div>
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
@@ -1643,7 +1690,10 @@ const Dashboard = () => {
                                             cursor: 'pointer'
                                         }}
                                     />
-                                    🔄 Recurring Task
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <Repeat size={16} />
+                                        Recurring Task
+                                    </span>
                                 </label>
                                 {isRecurring && (
                                     <select
@@ -1693,7 +1743,10 @@ const Dashboard = () => {
                                             cursor: 'pointer'
                                         }}
                                     />
-                                    🔔 Set Reminder
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <Bell size={16} />
+                                        Set Reminder
+                                    </span>
                                 </label>
                                 {reminderEnabled && (
                                     <div>
@@ -1875,26 +1928,30 @@ const Dashboard = () => {
                         flexWrap: 'wrap'
                     }}>
                         {[
-                            { label: 'All', value: '' },
-                            { label: '🔴 High', value: 'high' },
-                            { label: '🟡 Medium', value: 'medium' },
-                            { label: '🟢 Low', value: 'low' }
-                        ].map(({ label, value }) => (
+                            { label: 'All', value: '', icon: null, color: null },
+                            { label: 'High', value: 'high', icon: <AlertCircle size={14} />, color: colors.danger },
+                            { label: 'Medium', value: 'medium', icon: <AlertCircle size={14} />, color: colors.warning },
+                            { label: 'Low', value: 'low', icon: <AlertCircle size={14} />, color: colors.success }
+                        ].map(({ label, value, icon, color }) => (
                             <button
                                 key={value}
                                 onClick={() => setPriorityFilter(value)}
                                 style={{
                                     padding: '8px 16px',
-                                    background: priorityFilter === value ? colors.primary : colors.bg,
+                                    background: priorityFilter === value ? (color || colors.primary) : colors.bg,
                                     color: priorityFilter === value ? 'white' : colors.text,
-                                    border: `1px solid ${priorityFilter === value ? colors.primary : colors.border}`,
+                                    border: `1px solid ${priorityFilter === value ? (color || colors.primary) : colors.border}`,
                                     borderRadius: '8px',
                                     fontSize: '14px',
                                     fontWeight: '500',
                                     cursor: 'pointer',
-                                    transition: 'all 0.2s'
+                                    transition: 'all 0.2s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px'
                                 }}
                             >
+                                {icon && <span style={{ color: priorityFilter === value ? 'white' : color }}>{icon}</span>}
                                 {label}
                             </button>
                         ))}
@@ -2071,8 +2128,12 @@ const Dashboard = () => {
                             textAlign: 'center',
                             transition: 'all 0.3s ease'
                         }}>
-                            <div style={{ fontSize: '48px', marginBottom: '16px' }}>
-                                {searchQuery ? '🔍' : '📝'}
+                            <div style={{ 
+                                fontSize: '48px', 
+                                marginBottom: '16px',
+                                color: colors.textSecondary 
+                            }}>
+                                {searchQuery ? <Search size={48} /> : <Plus size={48} />}
                             </div>
                             <p style={{ color: colors.textSecondary, fontSize: '15px' }}>
                                 {searchQuery ? 'No tasks found matching your search' : 'No tasks yet. Create your first one!'}
@@ -2291,7 +2352,10 @@ const Dashboard = () => {
                                                         cursor: 'pointer'
                                                     }}
                                                 />
-                                                🔄 Recurring Task
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                    <Repeat size={16} />
+                                                    Recurring Task
+                                                </span>
                                             </label>
                                             {editIsRecurring && (
                                                 <select
@@ -2340,7 +2404,10 @@ const Dashboard = () => {
                                                         cursor: 'pointer'
                                                     }}
                                                 />
-                                                🔔 Set Reminder
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                    <Bell size={16} />
+                                                    Set Reminder
+                                                </span>
                                             </label>
                                             {editReminderEnabled && (
                                                 <div>
@@ -2657,9 +2724,12 @@ const Dashboard = () => {
                                                     fontSize: '12px',
                                                     fontWeight: '600'
                                                 }}>
-                                                    {task.priority === 'high' ? '🔴 High' : 
-                                                     task.priority === 'medium' ? '🟡 Medium' : 
-                                                     '🟢 Low'}
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                        <AlertCircle size={14} />
+                                                        {task.priority === 'high' ? 'High' : 
+                                                         task.priority === 'medium' ? 'Medium' : 
+                                                         'Low'}
+                                                    </span>
                                                 </span>
                                                 {task.dueDate && (
                                                     <span style={{
@@ -2675,7 +2745,10 @@ const Dashboard = () => {
                                                         fontSize: '12px',
                                                         fontWeight: '600'
                                                     }}>
-                                                        📅 {formatDate(task.dueDate)}
+                                                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                            <Calendar size={14} />
+                                                            {formatDate(task.dueDate)}
+                                                        </span>
                                                     </span>
                                                 )}
                                                 {task.isRecurring && (
@@ -2688,7 +2761,10 @@ const Dashboard = () => {
                                                         fontSize: '12px',
                                                         fontWeight: '600'
                                                     }}>
-                                                        🔄 {task.recurringPattern.charAt(0).toUpperCase() + task.recurringPattern.slice(1)}
+                                                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                            <Repeat size={14} />
+                                                            {task.recurringPattern.charAt(0).toUpperCase() + task.recurringPattern.slice(1)}
+                                                        </span>
                                                     </span>
                                                 )}
                                                 {task.reminderEnabled && !task.reminderSent && (
@@ -2701,7 +2777,10 @@ const Dashboard = () => {
                                                         fontSize: '12px',
                                                         fontWeight: '600'
                                                     }}>
-                                                        🔔 {new Date(task.reminderDate).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                            <Bell size={14} />
+                                                            {new Date(task.reminderDate).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
                                                     </span>
                                                 )}
                                                 {task.tags && task.tags.map(tag => (

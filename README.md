@@ -1,6 +1,6 @@
-# 📝 SaaS Task Manager
+# 🎯 TasQ - Smart Task Management
 
-A full-stack task management application built with the MERN stack (MongoDB, Express, React, Node.js).
+A modern, full-stack task management application built with the MERN stack (MongoDB, Express, React, Node.js). TasQ helps you organize, prioritize, and complete your tasks with powerful features and beautiful design.
 
 ---
 
@@ -62,8 +62,8 @@ A full-stack task management application built with the MERN stack (MongoDB, Exp
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/Deeksha-Mane/SaaS-Task-Manager.git
-cd task-manager
+git clone https://github.com/Deeksha-Mane/TasQ.git
+cd TasQ
 ```
 
 ### 2. Install Dependencies
@@ -117,7 +117,7 @@ The app will be available at:
 ## 🏗️ Project Structure
 
 ```
-task-manager/
+TasQ/
 ├── client/                      # React frontend
 │   ├── src/
 │   │   ├── api/                # API integration
