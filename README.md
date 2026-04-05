@@ -32,6 +32,7 @@ A modern, full-stack task management application built with the MERN stack (Mong
 - **Export** - Download tasks as CSV or PDF
 - **Profile Management** - Update name, email, and password
 - **Keyboard Shortcuts** - Quick actions (N for new task, / for search, Esc to close)
+- **Analytics Dashboard** - Visual insights with completion rates, priority distribution
 
 ---
 
@@ -62,7 +63,7 @@ A modern, full-stack task management application built with the MERN stack (Mong
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/Deeksha-Mane/TasQ.git
+git clone https://github.com/Deeksha-Mane/SaaS-Task-Manager.git
 cd TasQ
 ```
 
